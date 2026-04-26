@@ -1,7 +1,7 @@
 "use client";
 
 import { IJob } from "@/types";
-import { useEffect, useState } from "react";
+import { Suspense, use, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -329,12 +329,16 @@ function JobCard({ job }: { job: IJob }) {
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
-export default function JobsPage() {
+export default function JobsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const params = use(searchParams);
 
   const LIMIT = 12;
-  const pageParam = searchParams.get("page");
+  const pageParam = params.page;
   const initialPage = pageParam ? parseInt(pageParam) : 1;
 
   const [jobs, setJobs] = useState<IJob[]>([]);
@@ -364,7 +368,7 @@ export default function JobsPage() {
   const totalPages = total !== null ? Math.ceil(total / LIMIT) : null;
 
   return (
-    <>
+    <Suspense fallback={<div className="jobs-page">Loading...</div>}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
 
@@ -845,6 +849,6 @@ export default function JobsPage() {
           </nav>
         )}
       </main>
-    </>
+    </Suspense>
   );
 }
